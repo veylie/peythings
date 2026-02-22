@@ -3,52 +3,250 @@
 <head>
   <title>pey ♡</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+
   <style>
     body {
+      margin:0;
+      font-family:sans-serif;
       background: linear-gradient(180deg,#ffd6e7,#ffc0cb);
       display:flex;
       justify-content:center;
       align-items:center;
       height:100vh;
-      margin:0;
-      font-family: sans-serif;
-      text-align:center;
+      transition: background 0.6s ease;
+      overflow:hidden;
     }
+
     .card{
       background:white;
       padding:40px;
       border-radius:25px;
       box-shadow:0 10px 30px rgba(0,0,0,0.1);
-
       display:flex;
       flex-direction:column;
       align-items:center;
+      position:relative;
+      z-index:2;
     }
+
     a{
       display:inline-block;
-      margin-top:20px;
+      margin-top:15px;
       padding:12px 25px;
       border-radius:20px;
       background:#ff8eb4;
       color:white;
       text-decoration:none;
       font-weight:bold;
+      transition:0.3s;
+    }
+
+    a:hover{
+      transform:scale(1.05);
+    }
+
+    #particle-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>vey fav playlist 🎀</h1>
-    <p>૮ ˶ᵔ ᵕ ᵔ˶ ა</p>
-    <a href="https://open.spotify.com/playlist/5PQMRJratZkSCA4Ti5njut?si=87ee8d253dff459c" target="_blank">
-      2 years with ron, n still counting..
-    </a>
-    <a href="https://open.spotify.com/playlist/0wUzJlYk6hAibCFuaL2fZM?si=a78ce41e927e4181" target="_blank">
-      beloved papilo 🩷
-    </a>
-    <a href="https://open.spotify.com/playlist/61zTUbr7rBOa3jAUOE0ZJg?si=e7a8e0a3b6714585" target="_blank">
-      take me back to the 2016 🌷
-    </a>
-  </div>
+
+<canvas id="particle-bg"></canvas>
+
+<div class="card">
+  <h1>vey fav playlist 🎀</h1>
+  <p>૮ ˶ᵔ ᵕ ᵔ˶ ა</p>
+
+  <a href="https://open.spotify.com/playlist/5PQMRJratZkSCA4Ti5njut?si=87ee8d253dff459c" target="_blank" class="years">
+    2 years with ron, n still counting..
+  </a>
+
+  <a href="https://open.spotify.com/playlist/0wUzJlYk6hAibCFuaL2fZM?si=a78ce41e927e4181"
+     target="_blank"
+     class="beloved">
+    beloved papilo 🩷
+  </a>
+
+  <a href="https://open.spotify.com/playlist/61zTUbr7rBOa3jAUOE0ZJg?si=e7a8e0a3b6714585"
+     target="_blank" class="retro">
+    take me back to the 2016 🌷
+  </a>
+</div>
+
+<script>
+const canvas = document.getElementById("particle-bg");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+let baseCount = 25;
+let activeTheme = "default";
+
+// ================= PARTICLE =================
+class Particle {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 25 + 15;
+    this.speedY = Math.random() * 0.6 + 0.3;
+    this.speedX = Math.random() * 0.4 - 0.2;
+  }
+
+  update() {
+    this.y -= this.speedY;
+    this.x += this.speedX;
+
+    if (this.y < -50) {
+      this.y = canvas.height + 20;
+      this.x = Math.random() * canvas.width;
+    }
+  }
+
+  draw() {
+    ctx.globalAlpha = activeTheme !== "default" ? 0.6 : 0;
+    ctx.font = this.size + "px serif";
+
+    if (activeTheme === "beloved") {
+      ctx.fillText("🩷", this.x, this.y);
+    } 
+    else if (activeTheme === "years") {
+      ctx.fillText("🌸", this.x, this.y);
+    } 
+    else if (activeTheme === "retro") {
+      ctx.fillText("🎀", this.x, this.y);
+    }
+  }
+}
+
+// ================= BACKGROUND =================
+function drawBackground() {
+  let gradient;
+
+  if (activeTheme === "beloved") {
+    gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "rgba(255,255,255,0.6)");
+    gradient.addColorStop(1, "rgba(255,240,245,0.6)");
+  }
+
+  else if (activeTheme === "years") {
+    gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "rgba(255,240,245,0.6)");
+    gradient.addColorStop(1, "rgba(255,182,193,0.6)");
+  }
+
+  else if (activeTheme === "retro") {
+    gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "rgba(255,228,225,0.6)");
+    gradient.addColorStop(1, "rgba(221,160,221,0.6)");
+  }
+
+  if (gradient) {
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+// ================= INIT =================
+function initParticles(count) {
+  particles = [];
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle());
+  }
+}
+
+// ================= ANIMATION LOOP =================
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (activeTheme !== "default") {
+    drawBackground();
+  }
+
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+
+  requestAnimationFrame(animate);
+}
+
+initParticles(baseCount);
+animate();
+
+// ================= THEME CONTROL =================
+const belovedLink = document.querySelector(".beloved");
+const yearsLink = document.querySelector(".years");
+const retroLink = document.querySelector(".retro");
+
+function activateTheme(theme) {
+  activeTheme = theme;
+  initParticles(70);
+}
+
+function deactivateTheme() {
+  activeTheme = "default";
+  initParticles(baseCount);
+}
+
+// DESKTOP
+if (window.matchMedia("(hover: hover)").matches) {
+
+  belovedLink.addEventListener("mouseenter", () => activateTheme("beloved"));
+  belovedLink.addEventListener("mouseleave", deactivateTheme);
+
+  yearsLink.addEventListener("mouseenter", () => activateTheme("years"));
+  yearsLink.addEventListener("mouseleave", deactivateTheme);
+
+  retroLink.addEventListener("mouseenter", () => activateTheme("retro"));
+  retroLink.addEventListener("mouseleave", deactivateTheme);
+
+}
+// MOBILE
+else {
+
+  [belovedLink, yearsLink, retroLink].forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const theme =
+        link.classList.contains("beloved") ? "beloved" :
+        link.classList.contains("years") ? "years" :
+        "retro";
+
+      if (activeTheme === theme) {
+        deactivateTheme();
+      } else {
+        activateTheme(theme);
+      }
+
+      setTimeout(() => {
+        window.open(link.href, "_blank");
+      }, 500);
+    });
+  });
+
+}
+
+// RESPONSIVE
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
 </body>
 </html>
+
+<!-- gptpun gw pusing ini wkwkwk -->
